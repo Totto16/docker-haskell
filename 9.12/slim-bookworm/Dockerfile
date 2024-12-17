@@ -1,6 +1,6 @@
 FROM debian:bookworm-slim
 
-ENV LANG C.UTF-8
+ENV LANG=C.UTF-8
 
 # common haskell + stack dependencies
 RUN apt-get update && \
@@ -24,7 +24,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 ARG STACK=3.1.1
-ARG STACK_RELEASE_KEY=C5705533DA4F78D8664B5DC0575159689BEFB442
+ARG STACK_RELEASE_GPG=C5705533DA4F78D8664B5DC0575159689BEFB442
 
 RUN set -eux; \
     cd /tmp; \
@@ -45,7 +45,7 @@ RUN set -eux; \
     \
     curl -sSL "$STACK_URL.asc" -o stack.tar.gz.asc; \
     GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; \
-    gpg --batch --keyserver keyserver.ubuntu.com --receive-keys "$STACK_RELEASE_KEY"; \
+    gpg --batch --keyserver keyserver.ubuntu.com --receive-keys "$STACK_RELEASE_GPG"; \
     gpg --batch --verify stack.tar.gz.asc stack.tar.gz; \
     gpgconf --kill all; \
     \
@@ -58,7 +58,7 @@ RUN set -eux; \
     stack --version;
 
 ARG CABAL_INSTALL=3.14.1.0
-ARG CABAL_INSTALL_RELEASE_KEY=EAF2A9A722C0C96F2B431CA511AAD8CEDEE0CAEF
+ARG CABAL_INSTALL_RELEASE_GPG=EAF2A9A722C0C96F2B431CA511AAD8CEDEE0CAEF
 
 RUN set -eux; \
     cd /tmp; \
@@ -82,7 +82,7 @@ RUN set -eux; \
     curl -sSLO "$CABAL_INSTALL_SHA256SUMS_URL"; \
     curl -sSLO "$CABAL_INSTALL_SHA256SUMS_URL.sig"; \
     GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; \
-    gpg --batch --keyserver keyserver.ubuntu.com --receive-keys "$CABAL_INSTALL_RELEASE_KEY"; \
+    gpg --batch --keyserver keyserver.ubuntu.com --receive-keys "$CABAL_INSTALL_RELEASE_GPG"; \
     gpg --batch --verify SHA256SUMS.sig SHA256SUMS; \
     # confirm we are verifying SHA256SUMS that matches the release + sha256
     grep "$CABAL_INSTALL_SHA256  $CABAL_INSTALL_TAR" SHA256SUMS; \
@@ -95,7 +95,7 @@ RUN set -eux; \
     cabal --version
 
 ARG GHC=9.12.1
-ARG GHC_RELEASE_KEY=88B57FCF7DB53B4DB3BFA4B1588764FBE22D19C4
+ARG GHC_RELEASE_GPG=88B57FCF7DB53B4DB3BFA4B1588764FBE22D19C4
 
 RUN set -eux; \
     cd /tmp; \
@@ -116,7 +116,7 @@ RUN set -eux; \
     \
     GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; \
     curl -sSL "$GHC_URL.sig" -o ghc.tar.xz.sig; \
-    gpg --batch --keyserver keyserver.ubuntu.com --receive-keys "$GHC_RELEASE_KEY"; \
+    gpg --batch --keyserver keyserver.ubuntu.com --receive-keys "$GHC_RELEASE_GPG"; \
     gpg --batch --verify ghc.tar.xz.sig ghc.tar.xz; \
     gpgconf --kill all; \
     \
@@ -129,6 +129,6 @@ RUN set -eux; \
     \
     "/opt/ghc/$GHC/bin/ghc" --version
 
-ENV PATH /root/.cabal/bin:/root/.local/bin:/opt/ghc/${GHC}/bin:$PATH
+ENV PATH=/root/.cabal/bin:/root/.local/bin:/opt/ghc/${GHC}/bin:$PATH
 
 CMD ["ghci"]
